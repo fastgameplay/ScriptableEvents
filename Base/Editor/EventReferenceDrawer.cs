@@ -1,50 +1,44 @@
-namespace ScriptableEvents
+using UnityEngine;
+using UnityEditor;
+
+namespace ScriptableEvents.Editor
 {
-    using UnityEditor;
-    using UnityEngine;
-    
-    [CustomPropertyDrawer(typeof(EventReference))]
-    [CustomPropertyDrawer(typeof(EventReference<>))]
-    [CustomPropertyDrawer(typeof(EventReference<,>))]
+    [CustomPropertyDrawer(typeof(EventReferenceBase<,>), true)]
     public class EventReferenceDrawer : PropertyDrawer
     {
+        const float k_TypeWidth = 80f;
+        const float k_Space     = 4f;
+
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             EditorGUI.BeginProperty(position, label, property);
-
-            // Draw label
+            // draw the prefix label
             position = EditorGUI.PrefixLabel(position, GUIUtility.GetControlID(FocusType.Passive), label);
 
-            // Indent label
-            var indent = EditorGUI.indentLevel;
+            // save & clear indent 
+            int indent = EditorGUI.indentLevel;
             EditorGUI.indentLevel = 0;
 
-            // Get properties
-            SerializedProperty typeProp = property.FindPropertyRelative("_type");
-            SerializedProperty externalEventProp = property.FindPropertyRelative("_externalEvent");
+            // fetch our two serialized fields from the base class
+            var typeProp     = property.FindPropertyRelative("_type");
+            var externalProp = property.FindPropertyRelative("_externalEvent");
 
-            // Draw _type field
-            EditorGUI.PropertyField(new Rect(position.x, position.y, 80, position.height), typeProp, GUIContent.none);
+            // draw the enum popup
+            var typeRect = new Rect(position.x, position.y, k_TypeWidth, position.height);
+            EditorGUI.PropertyField(typeRect, typeProp, GUIContent.none);
 
-            // Draw corresponding field based on _type
-            EventType eventType = (EventType)typeProp.enumValueIndex;
-            switch (eventType)
+            // if it's External, draw the object‐field for the ScriptableEvent asset
+            if ((EventType)typeProp.enumValueIndex == EventType.External)
             {
-                case EventType.Internal:
-                    // Draw internal event field
-                    // EditorGUI.PropertyField(new Rect(position.x + 80, position.y, position.width - 80, position.height), property.FindPropertyRelative("_internalEvent"), GUIContent.none);
-                    break;
-                case EventType.External:
-                    // Draw external event field
-                    EditorGUI.PropertyField(new Rect(position.x + 80, position.y, position.width - 80, position.height), externalEventProp, GUIContent.none);
-                    break;
+                var fieldX    = position.x + k_TypeWidth + k_Space;
+                var fieldW    = position.width - k_TypeWidth - k_Space;
+                var fieldRect = new Rect(fieldX, position.y, fieldW, position.height);
+                EditorGUI.PropertyField(fieldRect, externalProp, GUIContent.none);
             }
 
-            // Reset indent level
+            // restore indent
             EditorGUI.indentLevel = indent;
-
             EditorGUI.EndProperty();
         }
     }
-
 }

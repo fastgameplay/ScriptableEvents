@@ -1,110 +1,119 @@
+using System.Diagnostics;
+using UnityEngine;
+using System;
+
 namespace ScriptableEvents
 {
-    using System;
-    using UnityEngine;
-    
+
     [Serializable]
-    public struct EventReference
+    public class EventReference : EventReferenceBase<Action, ScriptableEvent>
     {
-        public Action Event {
-            get{ return _type == EventType.Internal ? _internalEvent : _externalEvent.Event ;}
-            set{
-                if(_type == EventType.Internal){
-                    _internalEvent = value;
-                } else{
-                    _externalEvent.Event = value;
-                }
-            }    
-        }
-        [SerializeField] private EventType _type;
-
-        [SerializeField] private ScriptableEvent _externalEvent;
-        private Action _internalEvent;
-        
-        public static EventReference operator +(EventReference eventRef, Action listener)
+        public static EventReference operator +(EventReference reference, Action listener)
         {
-            eventRef.Event += listener;
-            return eventRef;
+            reference.AddListener(listener);
+            return reference;
         }
-
-        public static EventReference operator -(EventReference eventRef, Action listener)
+        public static EventReference operator -(EventReference reference, Action listener)
         {
-            eventRef.Event -= listener;
-
-            return eventRef;
+            reference.RemoveListener(listener);
+            return reference;
         }
 
         public void Invoke()
         {
-            Event?.Invoke();
+            Handler?.Invoke();
+            InvokeLog();
         }
     }
+
+
     [Serializable]
-    public struct EventReference<T>
+    public class EventReference<T> : EventReferenceBase<Action<T>, ScriptableEvent<T>>
     {
-        public Action<T> Event{
-            get{ return _type == EventType.Internal ? _internalEvent : _externalEvent.Event ;}
-            set{
-                if(_type == EventType.Internal){
-                    _internalEvent = value;
-                } else{
-                    _externalEvent.Event = value;
-                }
-            }
-        }    
-        [SerializeField] private EventType _type;
-
-        [SerializeField] private ScriptableEvent<T> _externalEvent;
-        private Action<T> _internalEvent;
-        
-        public static EventReference<T> operator +(EventReference<T> eventRef, Action<T> listener){
-            eventRef.Event += listener;
-            return eventRef;
+        public static EventReference<T> operator +(EventReference<T> reference, Action<T> listener)
+        {
+            reference.AddListener(listener);
+            return reference;
+        }
+        public static EventReference<T> operator -(EventReference<T> reference, Action<T> listener)
+        {
+            reference.RemoveListener(listener);
+            return reference;
         }
 
-        public static EventReference<T> operator -(EventReference<T> eventRef, Action<T> listener){
-            eventRef.Event -= listener;
-
-            return eventRef;
+        public void Invoke(T value)
+        {
+            Handler?.Invoke(value);
+            InvokeLog(value);
         }
-
-        public void Invoke(T arg1){
-            Event?.Invoke(arg1);
-        }
-
     }
 
     [Serializable]
-    public struct EventReference<T, J>
+    public class EventReference<T1, T2> : EventReferenceBase<Action<T1, T2>, ScriptableEvent<T1, T2>>
     {
-        public Action<T,J> Event{
-            get{ return _type == EventType.Internal ? _internalEvent : _externalEvent.Event ;}
-            set{
-                if(_type == EventType.Internal){
-                    _internalEvent = value;
-                } else{
-                    _externalEvent.Event = value;
-                }
-            }
-        }    
+        public static EventReference<T1, T2> operator +(EventReference<T1, T2> reference, Action<T1, T2> listener)
+        {
+            reference.AddListener(listener);
+            return reference;
+        }
+        public static EventReference<T1, T2> operator -(EventReference<T1, T2> reference, Action<T1, T2> listener)
+        {
+            reference.RemoveListener(listener);
+            return reference;
+        }
+
+        public void Invoke(T1 a, T2 b)
+        {
+            Handler?.Invoke(a, b);
+            InvokeLog(a, b);
+        }
+    }
+
+
+    [Serializable]
+    public abstract class EventReferenceBase<TDelegate, TEventAsset>
+        where TDelegate : Delegate
+        where TEventAsset : ScriptableEventBase<TDelegate>
+    {
         [SerializeField] private EventType _type;
+        [SerializeField] private TEventAsset _externalEvent;
+        private TDelegate _internalEvent;
 
-        [SerializeField] private ScriptableEvent<T,J> _externalEvent;
-        private Action<T,J> _internalEvent;
-            public static EventReference<T,J> operator +(EventReference<T,J> eventRef, Action<T,J> listener){
-            eventRef.Event += listener;
-            return eventRef;
+        public void AddListener(TDelegate listener)
+        {
+            if (_type == EventType.Internal)
+                _internalEvent = Delegate.Combine(_internalEvent, listener) as TDelegate;
+            else
+                _externalEvent.AddListener(listener);
         }
 
-        public static EventReference<T,J> operator -(EventReference<T,J> eventRef, Action<T,J> listener){
-            eventRef.Event -= listener;
-
-            return eventRef;
+        public void RemoveListener(TDelegate listener)
+        {
+            if (_type == EventType.Internal)
+                _internalEvent = Delegate.Remove(_internalEvent, listener) as TDelegate;
+            else
+                _externalEvent.RemoveListener(listener);
         }
 
-        public void Invoke(T arg1, J arg2){
-            Event?.Invoke(arg1, arg2);
+        protected TDelegate Handler =>
+            _type == EventType.Internal
+                ? _internalEvent
+                : _externalEvent.Event;
+                
+        [Conditional("LOG_SE")]
+        protected void InvokeLog(params object[] args)
+        {
+            var argList = (args?.Length > 0)
+                ? ": " + string.Join(", ", args)
+                : "";
+            UnityEngine.Debug.Log($"[{DateTime.Now:HH:mm:ss.fff}] [LOG_ER({Time.time:F2})] " +
+                      $"Invoking {GetType().Name} (“{_externalEvent?.name ?? "(internal)"}”){argList}");
         }
-        
+    }
+
+    public enum EventType
+    {
+        Internal,
+        External
     }
 }

@@ -1,8 +1,9 @@
+using System.Diagnostics;
+using UnityEngine;
+using System;
+
 namespace ScriptableEvents
 {
-    using System;
-    using UnityEngine;
-    using System.Diagnostics;
     #region  ScriptableEvent
     [CreateAssetMenu(fileName = "Void Event", menuName = "Events/CSharp/Void")]
     public class ScriptableEvent : ScriptableEventBase<Action>
@@ -44,9 +45,6 @@ namespace ScriptableEvents
         public void AddListener(TDelegate listener)
         {
             eventHandler = Delegate.Combine(eventHandler, listener) as TDelegate;
-#if LOG_SE
-            eventHandler += logInvoke()
-#endif  
         }
 
         public void RemoveListener(TDelegate listener)
