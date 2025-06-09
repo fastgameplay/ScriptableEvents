@@ -18,7 +18,7 @@ namespace ScriptableEvents
         }
         [SerializeField] private EventType _type;
 
-        [SerializeField] private SO_Event _externalEvent;
+        [SerializeField] private ScriptableEvent _externalEvent;
         private Action _internalEvent;
         
         public static EventReference operator +(EventReference eventRef, Action listener)
@@ -54,7 +54,7 @@ namespace ScriptableEvents
         }    
         [SerializeField] private EventType _type;
 
-        [SerializeField] private SO_BaseEvent<T> _externalEvent;
+        [SerializeField] private ScriptableEvent<T> _externalEvent;
         private Action<T> _internalEvent;
         
         public static EventReference<T> operator +(EventReference<T> eventRef, Action<T> listener){
@@ -89,7 +89,7 @@ namespace ScriptableEvents
         }    
         [SerializeField] private EventType _type;
 
-        [SerializeField] private SO_BaseEvent<T,J> _externalEvent;
+        [SerializeField] private ScriptableEvent<T,J> _externalEvent;
         private Action<T,J> _internalEvent;
             public static EventReference<T,J> operator +(EventReference<T,J> eventRef, Action<T,J> listener){
             eventRef.Event += listener;
