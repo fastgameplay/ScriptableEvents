@@ -1,9 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public enum EventType
+namespace ScriptableEvents
 {
-    Internal,
-    External
+    public enum EventType
+    {
+        Internal,
+        External
+    }
 }

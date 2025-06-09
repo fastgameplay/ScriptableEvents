@@ -1,3 +1,6 @@
-using UnityEngine;
-[CreateAssetMenu(fileName = "Float Event", menuName = "Events/CSharp/Float")]
-public class SO_FloatEvent : SO_BaseEvent<float>{}
+namespace ScriptableEvents
+{
+    using UnityEngine;
+    [CreateAssetMenu(fileName = "Float Event", menuName = "Events/CSharp/Float")]
+    public class SO_FloatEvent : SO_BaseEvent<float>{}
+}

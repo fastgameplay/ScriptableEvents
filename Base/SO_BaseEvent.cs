@@ -1,68 +1,30 @@
-using UnityEngine;
-using System;
-
-public abstract class SO_BaseEvent : ScriptableObject
+namespace ScriptableEvents
 {
-    public Action Event {
-        get{ return eventHandler;}
-        set{ eventHandler = value;}
-    }
-
-    protected Action eventHandler;
-
-     public void AddListener(Action listener)
+    using UnityEngine;
+    using System;
+    public abstract class SO_BaseEventClass<TDelegate> : ScriptableObject where TDelegate : Delegate
     {
-        Event += listener;
+        public TDelegate Event
+        {
+            get { return eventHandler; }
+            set { eventHandler = value; }
+        }
+        protected TDelegate eventHandler;
+
+        public void AddListener(TDelegate listener)
+            => eventHandler = Delegate.Combine(eventHandler, listener) as TDelegate;
+
+        public void RemoveListener(TDelegate listener)
+            => eventHandler = Delegate.Remove(eventHandler, listener) as TDelegate;
     }
 
-    public void RemoveListener(Action listener)
+    public abstract class SO_BaseEvent<T> : SO_BaseEventClass<Action<T>>
     {
-        Event -= listener;
+        public void Invoke(T value) => base.eventHandler?.Invoke(value);
     }
 
-    public void Invoke(){
-        Event?.Invoke();
-    }
-}
-public abstract class SO_BaseEvent<T> : ScriptableObject
-{
-    public Action<T> Event {
-        get{ return eventHandler;}
-        set{ eventHandler = value;}
-    }
-
-    private Action<T> eventHandler;
-
-    public void AddListener(Action<T> listener){
-        Event += listener;
-    }
-
-    public void RemoveListener(Action<T> listener){
-        Event -= listener;
-    }
-
-    public void Invoke(T value){
-        eventHandler?.Invoke(value);
-    }
-}
-public abstract class SO_BaseEvent<T,J> : ScriptableObject
-{
-    public Action<T, J> Event {
-        get{ return eventHandler;}
-        set{ eventHandler = value;}
-    }
-
-    private Action<T, J> eventHandler;
-
-    public void AddListener(Action<T, J> listener){
-        Event += listener;
-    }
-
-    public void RemoveListener(Action<T, J> listener){
-        Event -= listener;
-    }
-
-    public void Invoke(T arg1, J arg2){
-        eventHandler?.Invoke(arg1,arg2);
+    public abstract class SO_BaseEvent<T1, T2> : SO_BaseEventClass<Action<T1, T2>>
+    {
+        public void Invoke(T1 a, T2 b) => base.eventHandler?.Invoke(a, b);
     }
 }
