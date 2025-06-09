@@ -1,0 +1,13 @@
+{
+  "name": "ge.fgs.scriptableevents",
+  "version": "1.0.0",
+  "displayName": "Scriptable Events",
+  "description": "A ScriptableObject-based event system for Unity.",
+  "unity": "2020.3",
+  "keywords": ["unity", "events", "scriptableobjects"],
+  "author": {
+    "name": "Fast Play",
+    "email": "info@fgs.ge",
+    "url": "https://fgs.ge"
+  }
+}
